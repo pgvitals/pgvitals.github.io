@@ -1018,6 +1018,191 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* ── Runner Section ──────────────────────────────────── */
+    .runner-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 56px;
+      align-items: start;
+    }
+
+    .runner-features {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .runner-feature-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: border-color 0.15s;
+    }
+
+    .runner-feature-card:hover {
+      border-color: var(--accent-border);
+    }
+
+    .runner-code-terminal {
+      background: var(--hero-bg);
+      color: #7dd3fc;
+      border-radius: var(--radius-lg);
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      font-size: 12.5px;
+      padding: 20px;
+      line-height: 1.8;
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-top: 16px;
+      text-align: left;
+    }
+
+    .report-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      text-align: left;
+    }
+
+    .report-head {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 24px;
+    }
+
+    .report-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .report-meta {
+      font-size: 12px;
+      color: var(--slate);
+      line-height: 1.6;
+    }
+
+    .report-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .report-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .report-stat-box {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      text-align: center;
+    }
+
+    .report-stat-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--slate);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .report-stat-val {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .report-stat-val.clear { color: var(--green); }
+    .report-stat-val.data { color: var(--accent); }
+    .report-stat-val.error { color: #f59e0b; }
+
+    .report-table-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .report-table-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--slate);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .report-table th, .report-table td {
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .report-table th {
+      font-weight: 600;
+      color: var(--slate);
+    }
+
+    .report-table td {
+      color: var(--ink-mid);
+    }
+
+    .report-badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .report-badge.clear { background: var(--green-pale); color: var(--green); border: 1px solid var(--green-border); }
+    .report-badge.data { background: var(--accent-pale); color: var(--accent); border: 1px solid var(--accent-border); }
+    .report-badge.error { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+
+    .report-findings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--slate);
+    }
+
+    .report-finding-item {
+      display: flex;
+      gap: 8px;
+      line-height: 1.5;
+    }
+
+    .report-finding-bullet {
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    @media (max-width: 1000px) {
+      .runner-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1028,6 +1213,8 @@
     <a class="nav-logo" href="/">🩺 pg<span>vitals</span></a>
     <ul class="nav-links">
       <li><a href="/" class="active">Home</a></li>
+      <li><a href="#triage">Triage</a></li>
+      <li><a href="#runner">Runner</a></li>
       <li><a href="/diagnostics.html">Diagnostics</a></li>
     </ul>
     <div class="nav-right">
@@ -1298,6 +1485,123 @@
           <div>&nbsp;</div>
           <div><span class="t-comment">-- analyse trends</span></div>
           <div><span class="t-prompt">mydb=#</span> <span class="t-cmd">\i monitoring/trend_queries.sql</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Diagnostic Runner & Live Report -->
+<section class="section" id="runner">
+  <div class="section-inner">
+    <div class="section-label">Automation</div>
+    <h2 class="section-heading">Diagnostic Runner & Live Reports</h2>
+    <p class="section-sub">pgvitals includes a Python-based diagnostic runner that connects to any live database, runs all 37 sections in sequence, and generates a formatted health analysis report.</p>
+
+    <div class="runner-grid">
+      <div class="runner-features">
+        <div class="runner-feature-card">
+          <div class="cov-title" style="font-size:16px; font-weight:700; color:var(--ink); margin-bottom:8px;">Zero-dependency runner</div>
+          <div class="cov-desc" style="font-size:14px; color:var(--slate); line-height:1.6;">Execute all diagnostic queries automatically without installing any third-party agents or Python libraries. Set connection parameters or use profiles to target local, staging, or production environments.</div>
+          <div class="runner-code-terminal">
+            <span class="t-comment"># Copy config example and set your database connection details</span><br>
+            <span class="t-prompt">$</span> <span class="t-cmd">cp runner/pgvitals.conf.example runner/pgvitals.conf</span><br>
+            <br>
+            <span class="t-comment"># Run all 37 sections against your database</span><br>
+            <span class="t-prompt">$</span> <span class="t-cmd">python runner/run_diagnostics.py</span><br>
+            <br>
+            <span class="t-comment"># Target specific sections or use config profiles</span><br>
+            <span class="t-prompt">$</span> <span class="t-cmd">python runner/run_diagnostics.py --profile staging --sections 01,06,19</span>
+          </div>
+        </div>
+
+        <div class="runner-feature-card">
+          <div class="cov-title" style="font-size:16px; font-weight:700; color:var(--ink); margin-bottom:8px;">Layered Configuration System</div>
+          <div class="cov-desc" style="font-size:14px; color:var(--slate); line-height:1.6;">Configure the runner to suit your deployment. Parameters are evaluated in sequence: default config &rarr; local <code>pgvitals.conf</code> &rarr; named connection profiles &rarr; environment variables (like <code>PGPASSWORD</code>) &rarr; command-line flags.</div>
+        </div>
+      </div>
+
+      <!-- Report Card Mockup -->
+      <div class="report-card">
+        <div class="report-head">
+          <h3 class="report-title">🩺 Diagnostic Report</h3>
+          <div class="report-meta">
+            <strong>Database</strong>: <code>pfmegrnargs</code> on <code>hh-pgsql-public.ebi.ac.uk</code><br>
+            <strong>PostgreSQL Version</strong>: 16.11 (RNAcentral DB)<br>
+            <strong>Connected As</strong>: <code>reader</code>
+          </div>
+        </div>
+        <div class="report-body">
+          <div class="report-stats-grid">
+            <div class="report-stat-box">
+              <div class="report-stat-lbl">✅ Clear</div>
+              <div class="report-stat-val clear">8</div>
+            </div>
+            <div class="report-stat-box">
+              <div class="report-stat-lbl">📊 Data</div>
+              <div class="report-stat-val data">19</div>
+            </div>
+            <div class="report-stat-box">
+              <div class="report-stat-lbl">⚠️ Error</div>
+              <div class="report-stat-val error">10</div>
+            </div>
+          </div>
+
+          <div class="report-table-card">
+            <div class="report-table-lbl">Sample Executive Summary</div>
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Section</th>
+                  <th>Status</th>
+                  <th>Findings</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>01</td>
+                  <td>Slow Queries</td>
+                  <td><span class="report-badge data">Data</span></td>
+                  <td>5 rows returned</td>
+                </tr>
+                <tr>
+                  <td>06</td>
+                  <td>Unused Indexes</td>
+                  <td><span class="report-badge data">Data</span></td>
+                  <td>36 rows returned</td>
+                </tr>
+                <tr>
+                  <td>08</td>
+                  <td>Invalid Indexes</td>
+                  <td><span class="report-badge clear">Clear</span></td>
+                  <td>No issues</td>
+                </tr>
+                <tr>
+                  <td>15</td>
+                  <td>Autovacuum Activity</td>
+                  <td><span class="report-badge error">Error</span></td>
+                  <td>Permission Denied</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="report-findings-list">
+            <div class="report-table-lbl">Key Findings Highlighted</div>
+            <div class="report-finding-item">
+              <span class="report-finding-bullet">🔴</span>
+              <span><strong>36 Duplicate Indexes</strong> detected on active tables, consuming write capacity with no query benefit.</span>
+            </div>
+            <div class="report-finding-item">
+              <span class="report-finding-bullet">🔴</span>
+              <span><strong>30 Missing Foreign Key Indexes</strong> leading to potential full sequential scan storms on joins.</span>
+            </div>
+            <div class="report-finding-item">
+              <span class="report-finding-bullet">🟡</span>
+              <span><strong>Index Bloat up to 78%</strong> on primary data tables like <code>rnc_reference_map</code>.</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
