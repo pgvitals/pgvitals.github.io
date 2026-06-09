@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Example Diagnostic Report — pgvitals</title>
+  <meta name="description" content="A real pgvitals diagnostic report run against the EBI RNAcentral public PostgreSQL 16 database — 638 GB, 41 sections." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:        #1d4ed8;
+      --accent-light:  #2563eb;
+      --accent-pale:   #eff6ff;
+      --accent-border: #bfdbfe;
+      --accent-text:   #93c5fd;
+      --hero-bg:       #0f172a;
+      --ink:           #0f172a;
+      --ink-mid:       #334155;
+      --slate:         #64748b;
+      --slate-light:   #94a3b8;
+      --border:        #e2e8f0;
+      --bg:            #f8fafc;
+      --white:         #ffffff;
+      --green:         #15803d;
+      --green-pale:    #f0fdf4;
+      --green-border:  #bbf7d0;
+      --wrap:          880px;
+      --px:            32px;
+      --radius:        6px;
+      --radius-lg:     12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Nav ─────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 var(--px);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--ink);
+      letter-spacing: -0.4px;
+      flex-shrink: 0;
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      padding: 6px 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-mid);
+      text-decoration: none;
+      border-radius: var(--radius);
+      transition: background 0.12s, color 0.12s;
+    }
+
+    .nav-links a:hover { background: var(--bg); color: var(--ink); }
+    .nav-links a.active { color: var(--accent); font-weight: 600; }
+
+    .nav-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-mid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: all 0.12s;
+      background: var(--white);
+    }
+
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Page header ─────────────────────────────────────── */
+    .page-header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 40px var(--px) 32px;
+    }
+
+    .page-header-inner {
+      max-width: var(--wrap);
+      margin: 0 auto;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--slate);
+      margin-bottom: 16px;
+    }
+
+    .breadcrumb a { color: var(--slate); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--accent); }
+
+    .page-header h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+
+    .page-header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--slate);
+    }
+
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 3px 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* ── Report body ─────────────────────────────────────── */
+    .report-wrap {
+      max-width: var(--wrap);
+      margin: 0 auto;
+      padding: 40px var(--px) 80px;
+    }
+
+    /* Markdown render styles */
+    .report-body h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.5px;
+      margin: 40px 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .report-body h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--ink);
+      margin: 36px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .report-body h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 28px 0 10px;
+    }
+
+    .report-body p { margin-bottom: 14px; color: var(--ink-mid); }
+
+    .report-body blockquote {
+      border-left: 3px solid var(--accent-border);
+      background: var(--accent-pale);
+      padding: 12px 18px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin: 0 0 16px;
+    }
+
+    .report-body blockquote p { margin: 0; color: var(--ink-mid); font-size: 13.5px; }
+
+    .report-body blockquote strong { color: var(--ink); }
+
+    .report-body table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .report-body th {
+      background: var(--bg);
+      padding: 9px 12px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--slate);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .report-body td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink-mid);
+      vertical-align: top;
+    }
+
+    .report-body tr:last-child td { border-bottom: none; }
+    .report-body tr:hover td { background: var(--bg); }
+
+    .report-body pre {
+      background: var(--hero-bg);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      overflow-x: auto;
+      margin-bottom: 18px;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .report-body code {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 0.85em;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: var(--ink);
+    }
+
+    .report-body pre code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: #e2e8f0;
+      font-size: 12px;
+    }
+
+    .report-body ul, .report-body ol {
+      padding-left: 22px;
+      margin-bottom: 14px;
+    }
+
+    .report-body li { margin-bottom: 5px; color: var(--ink-mid); }
+
+    .report-body hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 28px 0;
+    }
+
+    .report-body details {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      margin-bottom: 14px;
+    }
+
+    .report-body summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--slate);
+    }
+
+    .report-body summary:hover { color: var(--ink); }
+
+    /* GitHub-style note/tip callouts */
+    .report-body .markdown-alert {
+      border-left: 3px solid var(--accent-border);
+      padding: 10px 16px;
+      margin-bottom: 16px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      background: var(--accent-pale);
+      font-size: 13.5px;
+    }
+
+    /* ── Footer ──────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px var(--px);
+      background: var(--white);
+    }
+
+    .footer-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      font-size: 13px;
+      color: var(--slate);
+      flex-wrap: wrap;
+    }
+
+    .footer-inner a { color: var(--accent); text-decoration: none; }
+    .footer-inner a:hover { text-decoration: underline; }
+
+    /* Loading state */
+    .loading {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--slate);
+      font-size: 15px;
+    }
+
+    @media (max-width: 680px) {
+      :root { --px: 20px; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="/">🩺 pg<span>vitals</span></a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/#triage">Triage</a></li>
+      <li><a href="/#runner">Runner</a></li>
+      <li><a href="/diagnostics.html">Diagnostics</a></li>
+      <li><a href="/example-report.html" class="active">Example Report</a></li>
+    </ul>
+    <div class="nav-right">
+      <a class="btn-ghost" href="https://github.com/pgvitals/pgvitals" target="_blank" rel="noopener">
+        <svg height="14" viewBox="0 0 16 16" width="14" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Page header -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="breadcrumb">
+      <a href="/">pgvitals</a>
+      <span>/</span>
+      <span>Example Report</span>
+    </div>
+    <h1>Sample Diagnostic Report</h1>
+    <div class="page-header-meta">
+      <span class="meta-chip">🌍 Real database, live data</span>
+      <span class="meta-chip">🐘 PostgreSQL 16.11</span>
+      <span class="meta-chip">📦 638 GB production DB</span>
+      <span class="meta-chip">41 sections run</span>
+    </div>
+  </div>
+</div>
+
+<!-- Report content -->
+<div class="report-wrap">
+  <div class="report-body" id="report-body">
+    <div class="loading">Loading report…</div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <span>🩺 <strong>pgvitals</strong> — MIT License</span>
+    <span>
+      <a href="/">Home</a> ·
+      <a href="/diagnostics.html">Diagnostics</a> ·
+      <a href="https://github.com/pgvitals/pgvitals" target="_blank">GitHub</a> ·
+      <a href="https://github.com/pgvitals/pgvitals/blob/master/master.sql" target="_blank">Download master.sql</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+  marked.setOptions({
+    highlight: function(code, lang) {
+      if (lang && hljs.getLanguage(lang)) {
+        return hljs.highlight(code, { language: lang }).value;
+      }
+      return hljs.highlightAuto(code).value;
+    },
+    breaks: false,
+    gfm: true,
+  });
+
+  fetch('/example-report.md')
+    .then(r => r.text())
+    .then(md => {
+      // Convert GitHub-style [!NOTE] and [!TIP] callouts to styled divs
+      md = md.replace(/>\s*\[!(NOTE|TIP|WARNING)\]\s*\n((?:>.*\n?)+)/g, (_, type, body) => {
+        const content = body.replace(/^>\s*/gm, '').trim();
+        const icons = { NOTE: 'ℹ️', TIP: '💡', WARNING: '⚠️' };
+        return `<div class="markdown-alert">${icons[type] || ''} ${content}</div>\n\n`;
+      });
+
+      document.getElementById('report-body').innerHTML = marked.parse(md);
+
+      // Remove the h1 since we have it in the page-header already
+      const h1 = document.querySelector('.report-body h1');
+      if (h1) h1.remove();
+
+      // Highlight any leftover code blocks
+      document.querySelectorAll('.report-body pre code').forEach(el => {
+        hljs.highlightElement(el);
+      });
+    })
+    .catch(err => {
+      document.getElementById('report-body').innerHTML =
+        '<p style="color:#ef4444">Failed to load report. Try opening via a local server.</p>';
+    });
+</script>
+
+</body>
+</html>
