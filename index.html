@@ -540,6 +540,106 @@
 
     .section-sub.light { color: var(--slate-light); }
 
+    /* ── Key Vitals ──────────────────────────────────────── */
+    .vitals-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .vital-card {
+      display: flex;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+    }
+
+    .vital-card:hover {
+      box-shadow: 0 6px 24px rgba(0,0,0,.07);
+      transform: translateY(-2px);
+      border-color: var(--accent-border);
+    }
+
+    .vital-accent {
+      width: 4px;
+      flex-shrink: 0;
+      border-radius: 0;
+    }
+
+    .vital-body {
+      padding: 22px 22px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .vital-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+      margin-bottom: 2px;
+    }
+
+    .vital-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .vital-why {
+      font-size: 13px;
+      color: var(--slate);
+      line-height: 1.7;
+    }
+
+    .vital-risk { margin-top: 2px; }
+
+    .risk-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 99px;
+      line-height: 1.5;
+    }
+
+    .risk-critical { background: rgba(239,68,68,.08);  color: #b91c1c; border: 1px solid rgba(239,68,68,.2); }
+    .risk-high     { background: rgba(249,115,22,.08); color: #c2410c; border: 1px solid rgba(249,115,22,.2); }
+    .risk-medium   { background: rgba(245,158,11,.08); color: #92400e; border: 1px solid rgba(245,158,11,.2); }
+
+    .vital-metrics {
+      font-size: 11.5px;
+      color: var(--slate-light);
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      margin-top: 2px;
+    }
+
+    .vital-metrics code {
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      font-size: 11px;
+      color: var(--slate);
+      background: var(--bg);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    @media (max-width: 1000px) {
+      .vitals-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .vitals-grid { grid-template-columns: 1fr; }
+    }
+
     /* ── Coverage cards ──────────────────────────────────── */
     .coverage-grid {
       display: grid;
@@ -598,8 +698,8 @@
     /* ── How to use ──────────────────────────────────────── */
     .steps-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 28px;
     }
 
     .step-card {
@@ -799,6 +899,7 @@
       .hero-mockup { display: none; }
       .coverage-grid { grid-template-columns: repeat(2, 1fr); }
       .monitoring-split { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
     @media (max-width: 680px) {
@@ -1259,6 +1360,7 @@
     <a class="nav-logo" href="/">🩺 pg<span>vitals</span></a>
     <ul class="nav-links">
       <li><a href="/" class="active">Home</a></li>
+      <li><a href="#vitals">Vitals</a></li>
       <li><a href="#triage">Triage</a></li>
       <li><a href="#runner">Runner</a></li>
       <li><a href="/diagnostics.html">Diagnostics</a></li>
@@ -1380,6 +1482,135 @@
           <!-- Renders dynamically -->
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- Key Vitals -->
+<section class="section" id="vitals">
+  <div class="section-inner">
+    <div class="section-label">Why monitor PostgreSQL</div>
+    <h2 class="section-heading">The vitals every database exposes</h2>
+    <p class="section-sub">PostgreSQL keeps extraordinarily detailed telemetry in its system catalog. These nine signals predict 95% of production incidents — before they become incidents.</p>
+    <div class="vitals-grid">
+
+      <div class="vital-card">
+        <div class="vital-accent" style="background:var(--col-query)"></div>
+        <div class="vital-body">
+          <div class="vital-icon" style="background:rgba(59,130,246,.1); color:var(--col-query)">⚡</div>
+          <div class="vital-title">Query Performance</div>
+          <div class="vital-why">The most direct measure of database health. A query that ran in 5 ms last week and now takes 800 ms is telling you something changed — an index was dropped, a table grew past a plan flip threshold, stats went stale.</div>
+          <div class="vital-risk">
+            <span class="risk-badge risk-high">Ignored → slow UX, wasted CPU, cascading timeouts</span>
+          </div>
+          <div class="vital-metrics">Tracked via: <code>pg_stat_statements</code></div>
+        </div>
+      </div>
+
+      <div class="vital-card">
+        <div class="vital-accent" style="background:var(--col-index)"></div>
+        <div class="vital-body">
+          <div class="vital-icon" style="background:rgba(34,197,94,.1); color:var(--col-index)">🗂</div>
+          <div class="vital-title">Index Health</div>
+          <div class="vital-why">Indexes that are never scanned waste write throughput on every INSERT/UPDATE/DELETE. Duplicate indexes compound the problem. Invalid indexes — left behind by a failed <code>CREATE CONCURRENTLY</code> — are invisible to the planner and invisible to the eye.</div>
+          <div class="vital-risk">
+            <span class="risk-badge risk-medium">Ignored → 2–10× write amplification, missed scan optimizations</span>
+          </div>
+          <div class="vital-metrics">Tracked via: <code>pg_stat_user_indexes</code>, <code>pg_index</code></div>
+        </div>
+      </div>
+
+      <div class="vital-card">
+        <div class="vital-accent" style="background:var(--col-table)"></div>
+        <div class="vital-body">
+          <div class="vital-icon" style="background:rgba(249,115,22,.1); color:var(--col-table)">🗄</div>
+          <div class="vital-title">Table Bloat & Vacuum</div>
+          <div class="vital-why">PostgreSQL's MVCC model never overwrites rows in place — every UPDATE creates a new row version. Autovacuum reclaims dead tuples, but it can fall behind under heavy write load. Once dead tuples exceed ~20% of a table, sequential scans slow down and the table's on-disk size balloons.</div>
+          <div class="vital-risk">
+            <span class="risk-badge risk-medium">Ignored → wasted disk, slower scans, autovacuum runaway</span>
+          </div>
+          <div class="vital-metrics">Tracked via: <code>pg_stat_user_tables</code>, <code>pg_class</code></div>
+        </div>
+      </div>
+
+      <div class="vital-card">
+        <div class="vital-accent" style="background:var(--col-connections)"></div>
+        <div class="vital-body">
+          <div class="vital-icon" style="background:rgba(245,158,11,.1); color:var(--col-connections)">🔌</div>
+          <div class="vital-title">Connection Pressure</div>
+          <div class="vital-why">PostgreSQL spawns a separate OS process per connection. Beyond <code>max_connections</code> every new connection attempt fails with a hard error. Unlike most resources, connection capacity is binary: at 99% you're fine; at 101% the application is down. Sessions stuck in <em>idle in transaction</em> silently hold locks and eat capacity without doing any work.</div>
+          <div class="vital-risk">
+            <span class="risk-badge risk-critical">Ignored → application outage, lock accumulation</span>
+          </div>
+          <div class="vital-metrics">Tracked via: <code>pg_stat_activity</code></div>
+        </div>
+      </div>
+
+      <div class="vital-card">
+        <div class="vital-accent" style="background:#8b5cf6"></div>
+        <div class="vital-body">
+          <div class="vital-icon" style="background:rgba(139,92,246,.1); color:#8b5cf6">🔒</div>
+          <div class="vital-title">Lock Contention</div>
+          <div class="vital-why">A single session holding a heavy lock — an <code>ALTER TABLE</code>, a long transaction, a forgotten cursor — can block every subsequent write to that table. PostgreSQL queues them up silently. In minutes you can go from one stuck session to 50 waiting sessions and a fully unresponsive application.</div>
+          <div class="vital-risk">
+            <span class="risk-badge risk-critical">Ignored → cascading blockage, full table unavailability</span>
+          </div>
+          <div class="vital-metrics">Tracked via: <code>pg_locks</code>, <code>pg_blocking_pids()</code></div>
+        </div>
+      </div>
+
+      <div class="vital-card">
+        <div class="vital-accent" style="background:var(--col-replication)"></div>
+        <div class="vital-body">
+          <div class="vital-icon" style="background:rgba(6,182,212,.1); color:var(--col-replication)">🔄</div>
+          <div class="vital-title">Replication Lag</div>
+          <div class="vital-why">Streaming replication keeps standbys in sync by shipping WAL. When a standby falls behind, stale reads go unnoticed and your failover RTO grows with every second of lag. Replication slots are even riskier — a paused consumer holds WAL on disk indefinitely, eventually filling the volume.</div>
+          <div class="vital-risk">
+            <span class="risk-badge risk-high">Ignored → stale reads, disk fill, high-RTO failover</span>
+          </div>
+          <div class="vital-metrics">Tracked via: <code>pg_stat_replication</code>, <code>pg_replication_slots</code></div>
+        </div>
+      </div>
+
+      <div class="vital-card">
+        <div class="vital-accent" style="background:var(--col-risk)"></div>
+        <div class="vital-body">
+          <div class="vital-icon" style="background:rgba(239,68,68,.1); color:var(--col-risk)">⚠️</div>
+          <div class="vital-title">XID Wraparound</div>
+          <div class="vital-why">Every transaction in PostgreSQL consumes a 32-bit transaction ID. The counter wraps at ~2 billion. If a database reaches the safety limit without running VACUUM FREEZE, PostgreSQL performs an emergency shutdown to protect data integrity — all connections are refused until the database is brought up in single-user mode. This is the only self-inflicted PostgreSQL failure mode with no fast recovery path.</div>
+          <div class="vital-risk">
+            <span class="risk-badge risk-critical">Ignored → forced database shutdown, manual recovery only</span>
+          </div>
+          <div class="vital-metrics">Tracked via: <code>age(datfrozenxid)</code> in <code>pg_database</code></div>
+        </div>
+      </div>
+
+      <div class="vital-card">
+        <div class="vital-accent" style="background:var(--col-config)"></div>
+        <div class="vital-body">
+          <div class="vital-icon" style="background:rgba(100,116,139,.1); color:var(--col-config)">💾</div>
+          <div class="vital-title">Buffer Cache Hit Ratio</div>
+          <div class="vital-why">PostgreSQL's <code>shared_buffers</code> cache is the fastest path to data. A cache hit costs microseconds; a cache miss hits disk and costs milliseconds. A healthy OLTP database should be above 95–99%. A sustained drop signals that your working set has grown past your buffer pool, or a runaway query is evicting hot pages.</div>
+          <div class="vital-risk">
+            <span class="risk-badge risk-medium">Ignored → disk I/O bottleneck, 100–1000× query slowdown</span>
+          </div>
+          <div class="vital-metrics">Tracked via: <code>pg_stat_database</code> blks_hit / blks_read</div>
+        </div>
+      </div>
+
+      <div class="vital-card">
+        <div class="vital-accent" style="background:var(--col-vacuum)"></div>
+        <div class="vital-body">
+          <div class="vital-icon" style="background:rgba(168,85,247,.1); color:var(--col-vacuum)">📍</div>
+          <div class="vital-title">Checkpoint Pressure</div>
+          <div class="vital-why">Checkpoints flush dirty pages from shared buffers to disk on a schedule. When writes outpace the schedule, PostgreSQL forces extra checkpoints — causing I/O spikes that appear as latency spikes in applications. Backends writing directly to disk (<code>buffers_backend</code>) bypass the checkpoint process entirely and indicate a severely undersized buffer pool.</div>
+          <div class="vital-risk">
+            <span class="risk-badge risk-medium">Ignored → periodic I/O storms, unpredictable p99 latency</span>
+          </div>
+          <div class="vital-metrics">Tracked via: <code>pg_stat_checkpointer</code> (PG17+), <code>pg_stat_bgwriter</code></div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
