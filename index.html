@@ -209,6 +209,39 @@
 
     .btn-primary:hover { background: var(--accent-light); }
 
+    /* ── ECG animated background ────────────────────────── */
+    .hero-ecg {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 120px;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+      /* fade in/out at viewport edges */
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+      mask-image:         linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+    }
+
+    .ecg-svg {
+      position: absolute;
+      bottom: 18px;
+      left: 0;
+      width: 2400px;
+      height: 100px;
+      animation: ecg-scroll 14s linear infinite;
+    }
+
+    @keyframes ecg-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-1200px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ecg-svg { animation: none; }
+    }
+
     /* ── Hero ────────────────────────────────────────────── */
     .hero {
       background: var(--hero-bg);
@@ -1430,59 +1463,17 @@
       </div>
     </div>
   </div>
-</section>
 
-<!-- Stats strip -->
-<div class="stats-strip">
-  <div class="stats-inner">
-    <div class="stat-item">
-      <div class="stat-value">40</div>
-      <div class="stat-label">Diagnostic sections</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-value">0</div>
-      <div class="stat-label">Dependencies to install</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-value">PG14+</div>
-      <div class="stat-label">PostgreSQL compatible</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-value">MIT</div>
-      <div class="stat-label">Open source license</div>
-    </div>
-  </div>
-</div>
-
-<!-- Guided Triage -->
-<section class="section" id="triage">
-  <div class="section-inner">
-    <div class="section-label">Triage</div>
-    <h2 class="section-heading">Guided Symptom Triage</h2>
-    <p class="section-sub">Choose a common symptom below to view a step-by-step diagnostic path with copy-pasteable SQL. Powered by pgvitals diagnostics.</p>
-    
-    <div class="triage-container">
-      <!-- Left sidebar: Symptom list -->
-      <div class="triage-sidebar" id="triage-sidebar">
-        <!-- Renders dynamically -->
-      </div>
-      
-      <!-- Right panel: Active triage runbook steps -->
-      <div class="triage-content">
-        <div class="triage-header">
-          <div class="triage-title-row">
-            <span class="triage-icon" id="triage-icon">🐌</span>
-            <h3 class="triage-active-title" id="triage-active-title">Queries suddenly slow</h3>
-          </div>
-          <p class="triage-trigger" id="triage-trigger">Response times jumped; users reporting slowness...</p>
-        </div>
-        
-        <!-- Steps container -->
-        <div class="triage-steps" id="triage-steps">
-          <!-- Renders dynamically -->
-        </div>
-      </div>
-    </div>
+  <!-- ECG heartbeat background -->
+  <div class="hero-ecg" aria-hidden="true">
+    <svg class="ecg-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 100" width="2400" height="100">
+      <!-- glow layer: thick, very faint -->
+      <path fill="none" stroke="#60a5fa" stroke-width="7" stroke-opacity="0.07"
+        d="M 0,70 L 60,70 Q 70,62 75,58 Q 82,54 87,58 Q 92,62 96,70 L 112,70 L 116,74 L 120,12 L 124,82 L 128,70 Q 138,60 148,55 Q 158,50 166,55 Q 174,60 178,70 L 300,70 L 360,70 Q 370,62 375,58 Q 382,54 387,58 Q 392,62 396,70 L 412,70 L 416,74 L 420,12 L 424,82 L 428,70 Q 438,60 448,55 Q 458,50 466,55 Q 474,60 478,70 L 600,70 L 660,70 Q 670,62 675,58 Q 682,54 687,58 Q 692,62 696,70 L 712,70 L 716,74 L 720,12 L 724,82 L 728,70 Q 738,60 748,55 Q 758,50 766,55 Q 774,60 778,70 L 900,70 L 960,70 Q 970,62 975,58 Q 982,54 987,58 Q 992,62 996,70 L 1012,70 L 1016,74 L 1020,12 L 1024,82 L 1028,70 Q 1038,60 1048,55 Q 1058,50 1066,55 Q 1074,60 1078,70 L 1200,70 L 1260,70 Q 1270,62 1275,58 Q 1282,54 1287,58 Q 1292,62 1296,70 L 1312,70 L 1316,74 L 1320,12 L 1324,82 L 1328,70 Q 1338,60 1348,55 Q 1358,50 1366,55 Q 1374,60 1378,70 L 1500,70 L 1560,70 Q 1570,62 1575,58 Q 1582,54 1587,58 Q 1592,62 1596,70 L 1612,70 L 1616,74 L 1620,12 L 1624,82 L 1628,70 Q 1638,60 1648,55 Q 1658,50 1666,55 Q 1674,60 1678,70 L 1800,70 L 1860,70 Q 1870,62 1875,58 Q 1882,54 1887,58 Q 1892,62 1896,70 L 1912,70 L 1916,74 L 1920,12 L 1924,82 L 1928,70 Q 1938,60 1948,55 Q 1958,50 1966,55 Q 1974,60 1978,70 L 2100,70 L 2160,70 Q 2170,62 2175,58 Q 2182,54 2187,58 Q 2192,62 2196,70 L 2212,70 L 2216,74 L 2220,12 L 2224,82 L 2228,70 Q 2238,60 2248,55 Q 2258,50 2266,55 Q 2274,60 2278,70 L 2400,70"/>
+      <!-- sharp line layer -->
+      <path fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-opacity="0.22"
+        d="M 0,70 L 60,70 Q 70,62 75,58 Q 82,54 87,58 Q 92,62 96,70 L 112,70 L 116,74 L 120,12 L 124,82 L 128,70 Q 138,60 148,55 Q 158,50 166,55 Q 174,60 178,70 L 300,70 L 360,70 Q 370,62 375,58 Q 382,54 387,58 Q 392,62 396,70 L 412,70 L 416,74 L 420,12 L 424,82 L 428,70 Q 438,60 448,55 Q 458,50 466,55 Q 474,60 478,70 L 600,70 L 660,70 Q 670,62 675,58 Q 682,54 687,58 Q 692,62 696,70 L 712,70 L 716,74 L 720,12 L 724,82 L 728,70 Q 738,60 748,55 Q 758,50 766,55 Q 774,60 778,70 L 900,70 L 960,70 Q 970,62 975,58 Q 982,54 987,58 Q 992,62 996,70 L 1012,70 L 1016,74 L 1020,12 L 1024,82 L 1028,70 Q 1038,60 1048,55 Q 1058,50 1066,55 Q 1074,60 1078,70 L 1200,70 L 1260,70 Q 1270,62 1275,58 Q 1282,54 1287,58 Q 1292,62 1296,70 L 1312,70 L 1316,74 L 1320,12 L 1324,82 L 1328,70 Q 1338,60 1348,55 Q 1358,50 1366,55 Q 1374,60 1378,70 L 1500,70 L 1560,70 Q 1570,62 1575,58 Q 1582,54 1587,58 Q 1592,62 1596,70 L 1612,70 L 1616,74 L 1620,12 L 1624,82 L 1628,70 Q 1638,60 1648,55 Q 1658,50 1666,55 Q 1674,60 1678,70 L 1800,70 L 1860,70 Q 1870,62 1875,58 Q 1882,54 1887,58 Q 1892,62 1896,70 L 1912,70 L 1916,74 L 1920,12 L 1924,82 L 1928,70 Q 1938,60 1948,55 Q 1958,50 1966,55 Q 1974,60 1978,70 L 2100,70 L 2160,70 Q 2170,62 2175,58 Q 2182,54 2187,58 Q 2192,62 2196,70 L 2212,70 L 2216,74 L 2220,12 L 2224,82 L 2228,70 Q 2238,60 2248,55 Q 2258,50 2266,55 Q 2274,60 2278,70 L 2400,70"/>
+    </svg>
   </div>
 </section>
 
@@ -1611,6 +1602,60 @@
         </div>
       </div>
 
+    </div>
+  </div>
+</section>
+
+<!-- Stats strip -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <div class="stat-value">40</div>
+      <div class="stat-label">Diagnostic sections</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">0</div>
+      <div class="stat-label">Dependencies to install</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">PG14+</div>
+      <div class="stat-label">PostgreSQL compatible</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">MIT</div>
+      <div class="stat-label">Open source license</div>
+    </div>
+  </div>
+</div>
+
+<!-- Guided Triage -->
+<section class="section" id="triage">
+  <div class="section-inner">
+    <div class="section-label">Triage</div>
+    <h2 class="section-heading">Guided Symptom Triage</h2>
+    <p class="section-sub">Choose a common symptom below to view a step-by-step diagnostic path with copy-pasteable SQL. Powered by pgvitals diagnostics.</p>
+    
+    <div class="triage-container">
+      <!-- Left sidebar: Symptom list -->
+      <div class="triage-sidebar" id="triage-sidebar">
+        <!-- Renders dynamically -->
+      </div>
+      
+      <!-- Right panel: Active triage runbook steps -->
+      <div class="triage-content">
+        <div class="triage-header">
+          <div class="triage-title-row">
+            <span class="triage-icon" id="triage-icon">🐌</span>
+            <h3 class="triage-active-title" id="triage-active-title">Queries suddenly slow</h3>
+          </div>
+          <p class="triage-trigger" id="triage-trigger">Response times jumped; users reporting slowness...</p>
+        </div>
+        
+        <!-- Steps container -->
+        <div class="triage-steps" id="triage-steps">
+          <!-- Renders dynamically -->
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1919,7 +1964,7 @@
 <!-- Footer -->
 <footer>
   <div class="footer-inner">
-    <span>🩺 <strong>pgvitals</strong> — MIT License</span>
+    <span>🩺 <strong>pgvitals</strong> — MIT License &nbsp;·&nbsp; Built by <a href="https://github.com/gauravs19" target="_blank">Gaurav Sharma</a></span>
     <span>
       <a href="/diagnostics.html">Diagnostics</a> ·
       <a href="/example-report.html">Example Report</a> ·
