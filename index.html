@@ -61,153 +61,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/shell.css" />
+  <script src="/shell.js" defer></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --accent:        #1d4ed8;
-      --accent-light:  #2563eb;
-      --accent-pale:   #eff6ff;
-      --accent-border: #bfdbfe;
-      --accent-text:   #93c5fd;
-      --hero-bg:       #0f172a;
-      --dark-surface:  #1e293b;
-      --dark-surface2: #273349;
-      --ink:           #0f172a;
-      --ink-mid:       #334155;
-      --slate:         #64748b;
-      --slate-light:   #94a3b8;
-      --border:        #e2e8f0;
-      --bg:            #f8fafc;
-      --white:         #ffffff;
-      --green:         #15803d;
-      --green-pale:    #f0fdf4;
-      --green-border:  #bbf7d0;
-      --wrap:          1160px;
-      --px:            32px;
-      --radius:        6px;
-      --radius-lg:     12px;
-      --radius-xl:     18px;
-
-      /* area colours */
-      --col-query:       #3b82f6;
-      --col-index:       #22c55e;
-      --col-table:       #f97316;
-      --col-vacuum:      #a855f7;
-      --col-connections: #f59e0b;
-      --col-replication: #06b6d4;
-      --col-risk:        #ef4444;
-      --col-config:      #64748b;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--white);
-      color: var(--ink);
-      line-height: 1.65;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── Utility ─────────────────────────────────────────── */
-    .container { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--px); }
-    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
-
-    /* ── Nav ─────────────────────────────────────────────── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 200;
-      background: rgba(255,255,255,0.96);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .nav-inner {
-      max-width: var(--wrap);
-      margin: 0 auto;
-      padding: 0 var(--px);
-      height: 60px;
-      display: flex;
-      align-items: center;
-      gap: 32px;
-    }
-
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      font-weight: 800;
-      font-size: 18px;
-      color: var(--ink);
-      letter-spacing: -0.4px;
-      flex-shrink: 0;
-    }
-
-    .nav-logo span { color: var(--accent); }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      list-style: none;
-    }
-
-    .nav-links a {
-      padding: 6px 12px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--ink-mid);
-      text-decoration: none;
-      border-radius: var(--radius);
-      transition: background 0.12s, color 0.12s;
-    }
-
-    .nav-links a:hover { background: var(--bg); color: var(--ink); }
-    .nav-links a.active { color: var(--accent); font-weight: 600; }
-
-    .nav-right {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn-ghost {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--ink-mid);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      text-decoration: none;
-      transition: all 0.12s;
-      background: var(--white);
-    }
-
-    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 20px;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--white);
-      background: var(--accent);
-      border: 1px solid transparent;
-      border-radius: var(--radius);
-      text-decoration: none;
-      transition: background 0.12s;
-    }
-
-    .btn-primary:hover { background: var(--accent-light); }
 
     /* ── ECG animated background ────────────────────────── */
     .hero-ecg {
@@ -905,27 +761,6 @@
 
     .btn-cta-ghost:hover { border-color: rgba(255,255,255,.35); color: var(--white); }
 
-    /* ── Footer ──────────────────────────────────────────── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 28px var(--px);
-    }
-
-    .footer-inner {
-      max-width: var(--wrap);
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      font-size: 13px;
-      color: var(--slate);
-      flex-wrap: wrap;
-    }
-
-    .footer-inner a { color: var(--accent); text-decoration: none; }
-    .footer-inner a:hover { text-decoration: underline; }
-
     /* ── Responsive ──────────────────────────────────────── */
     @media (max-width: 1000px) {
       .hero-inner { grid-template-columns: 1fr; }
@@ -1388,27 +1223,6 @@
 <body>
 
 <!-- Nav -->
-<nav>
-  <div class="nav-inner">
-    <a class="nav-logo" href="/">🩺 pg<span>vitals</span></a>
-    <ul class="nav-links">
-      <li><a href="/" class="active">Home</a></li>
-      <li><a href="#vitals">Vitals</a></li>
-      <li><a href="#triage">Triage</a></li>
-      <li><a href="#runner">Runner</a></li>
-      <li><a href="/diagnostics.html">Diagnostics</a></li>
-      <li><a href="/example-report.html">Example Report</a></li>
-    </ul>
-    <div class="nav-right">
-      <a class="btn-ghost" href="https://github.com/pgvitals/pgvitals" target="_blank" rel="noopener">
-        <svg height="14" viewBox="0 0 16 16" width="14" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
-        GitHub
-      </a>
-      <a class="btn-primary" href="/diagnostics.html">Open Diagnostics →</a>
-    </div>
-  </div>
-</nav>
-
 <!-- Hero -->
 <section class="hero">
   <div class="hero-inner">
@@ -1962,19 +1776,6 @@
 </section>
 
 <!-- Footer -->
-<footer>
-  <div class="footer-inner">
-    <span>🩺 <strong>pgvitals</strong> — MIT License &nbsp;·&nbsp; Built by <a href="https://github.com/gauravs19" target="_blank">Gaurav Sharma</a></span>
-    <span>
-      <a href="/diagnostics.html">Diagnostics</a> ·
-      <a href="/example-report.html">Example Report</a> ·
-      <a href="https://github.com/pgvitals/pgvitals" target="_blank">GitHub</a> ·
-      <a href="https://github.com/pgvitals/pgvitals/blob/master/master.sql" target="_blank">Download master.sql</a> ·
-      <a href="https://github.com/pgvitals/pgvitals/blob/master/health_score.sql" target="_blank">Health Score SQL</a> ·
-      <a href="https://pypi.org/project/pgvitals/" target="_blank">PyPI</a>
-    </span>
-  </div>
-</footer>
 
 <div class="toast" id="toast"></div>
 
