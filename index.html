@@ -1464,6 +1464,12 @@
       </div>
       <div class="step-card">
         <div class="step-num">3</div>
+        <div class="step-title">Health score</div>
+        <div class="step-desc">Get a single 0–100 score with a per-check breakdown — XID risk, dead tuples, connections, lock waits, cache hit ratio, and more.</div>
+        <div class="step-code">psql -d mydb -f health_score.sql</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
         <div class="step-title">Load test monitoring</div>
         <div class="step-desc">Use the snapshot framework to capture metrics at intervals during a stress test, then diff baseline vs peak.</div>
         <div class="step-code">SELECT perf_monitor<br>&nbsp;&nbsp;.capture_snapshot('peak');</div>
@@ -1548,17 +1554,17 @@
     <div class="runner-grid">
       <div class="runner-features">
         <div class="runner-feature-card">
-          <div class="cov-title" style="font-size:16px; font-weight:700; color:var(--ink); margin-bottom:8px;">Zero-dependency runner</div>
-          <div class="cov-desc" style="font-size:14px; color:var(--slate); line-height:1.6;">Execute all diagnostic queries automatically without installing any third-party agents or Python libraries. Set connection parameters or use profiles to target local, staging, or production environments.</div>
+          <div class="cov-title" style="font-size:16px; font-weight:700; color:var(--ink); margin-bottom:8px;">pip install pgvitals</div>
+          <div class="cov-desc" style="font-size:14px; color:var(--slate); line-height:1.6;">Install the <code>pgvitals</code> CLI with pip. Downloads the SQL library once with <code>init</code>, then run full diagnostics against any database — no config files needed for a quick check.</div>
           <div class="runner-code-terminal">
-            <span class="t-comment"># Copy config example and set your database connection details</span><br>
-            <span class="t-prompt">$</span> <span class="t-cmd">cp runner/pgvitals.conf.example runner/pgvitals.conf</span><br>
+            <span class="t-prompt">$</span> <span class="t-cmd">pip install pgvitals</span><br>
+            <span class="t-prompt">$</span> <span class="t-cmd">pgvitals init</span><span class="t-comment" style="margin-left:8px;"># download SQL files once</span><br>
             <br>
-            <span class="t-comment"># Run all 37 sections against your database</span><br>
-            <span class="t-prompt">$</span> <span class="t-cmd">python runner/run_diagnostics.py</span><br>
+            <span class="t-comment"># Run full diagnostics against any database</span><br>
+            <span class="t-prompt">$</span> <span class="t-cmd">pgvitals --host db.example.com --database prod</span><br>
             <br>
-            <span class="t-comment"># Target specific sections or use config profiles</span><br>
-            <span class="t-prompt">$</span> <span class="t-cmd">python runner/run_diagnostics.py --profile staging --sections 01,06,19</span>
+            <span class="t-comment"># Or use a config profile</span><br>
+            <span class="t-prompt">$</span> <span class="t-cmd">pgvitals --profile staging --sections 01,06,19</span>
           </div>
         </div>
 
@@ -1687,7 +1693,9 @@
       <a href="/diagnostics.html">Diagnostics</a> ·
       <a href="/example-report.html">Example Report</a> ·
       <a href="https://github.com/pgvitals/pgvitals" target="_blank">GitHub</a> ·
-      <a href="https://github.com/pgvitals/pgvitals/blob/master/master.sql" target="_blank">Download master.sql</a>
+      <a href="https://github.com/pgvitals/pgvitals/blob/master/master.sql" target="_blank">Download master.sql</a> ·
+      <a href="https://github.com/pgvitals/pgvitals/blob/master/health_score.sql" target="_blank">Health Score SQL</a> ·
+      <a href="https://pypi.org/project/pgvitals/" target="_blank">PyPI</a>
     </span>
   </div>
 </footer>
