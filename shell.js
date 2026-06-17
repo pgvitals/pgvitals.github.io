@@ -6,6 +6,7 @@
   var isHome = path === '' || path === '/' || path === '/index.html';
   var isDiag = path === '/diagnostics.html';
   var isReport = path === '/example-report.html';
+  var isPlay = path === '/playground.html';
 
   function a(href, label, active) {
     return '<li><a href="' + href + '"' + (active ? ' class="active"' : '') + '>' + label + '</a></li>';
@@ -17,6 +18,7 @@
     a('/#triage', 'Triage', false),
     a('/#runner', 'Runner', false),
     a('/diagnostics.html', 'Diagnostics', isDiag),
+    a('/playground.html', 'Playground', isPlay),
     a('/example-report.html', 'Example Report', isReport),
   ].join('\n      ');
 
@@ -48,6 +50,7 @@
     '    <span>🩺 <strong>pgvitals</strong> — MIT License &nbsp;\xB7&nbsp; Built by <a href="https://github.com/gauravs19" target="_blank" rel="noopener">Gaurav Sharma</a></span>',
     '    <span>',
     '      <a href="/diagnostics.html">Diagnostics</a> \xB7',
+    '      <a href="/playground.html">Playground</a> \xB7',
     '      <a href="/example-report.html">Example Report</a> \xB7',
     '      <a href="https://github.com/pgvitals/pgvitals" target="_blank" rel="noopener">GitHub</a> \xB7',
     '      <a href="https://github.com/pgvitals/pgvitals/blob/master/master.sql" target="_blank" rel="noopener">Download master.sql</a> \xB7',
