@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Health Score Playground — pgvitals</title>
+  <meta name="description" content="Paste your pgvitals health_score.sql output and instantly render a shareable PostgreSQL health score card — gauge, grade, and per-check breakdown. Runs entirely in your browser; nothing is uploaded." />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="pgvitals" />
+  <meta name="keywords" content="PostgreSQL health score, postgres health check, pgvitals playground, database health report, pg_stat health" />
+  <link rel="canonical" href="https://pgvitals.github.io/playground.html" />
+
+  <meta property="og:site_name" content="pgvitals" />
+  <meta property="og:title" content="Health Score Playground — pgvitals" />
+  <meta property="og:description" content="Paste your health_score.sql output and render a shareable PostgreSQL health score card. No install, no upload — runs in your browser." />
+  <meta property="og:url" content="https://pgvitals.github.io/playground.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://pgvitals.github.io/og-image.svg" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Health Score Playground — pgvitals" />
+  <meta name="twitter:description" content="Paste health_score.sql output, get a shareable PostgreSQL health card. Runs in your browser." />
+  <meta name="twitter:image" content="https://pgvitals.github.io/og-image.svg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/shell.css" />
+  <script src="/shell.js" defer></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --pg-bg:#f8fafc; --pg-card:#fff; --pg-ink:#0f172a; --pg-muted:#64748b;
+      --pg-line:#e2e8f0; --pg-accent:#1d4ed8; --pg-dark:#0f172a;
+    }
+    body { font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+           color:var(--pg-ink); background:var(--pg-bg); margin:0; }
+
+    .page-header { background:var(--pg-dark); color:#fff; padding:40px 0 32px; }
+    .ph-inner, .pg-wrap { max-width:1100px; margin:0 auto; padding:0 24px; }
+    .breadcrumb { font-size:13px; color:#94a3b8; margin-bottom:10px; }
+    .breadcrumb a { color:#cbd5e1; text-decoration:none; }
+    .page-header h1 { margin:0 0 6px; font-size:30px; letter-spacing:-0.6px; }
+    .page-header p { margin:0; color:#94a3b8; font-size:15px; max-width:680px; }
+    .privacy { display:inline-flex; align-items:center; gap:7px; margin-top:14px;
+               font-size:12.5px; color:#a7f3d0; background:rgba(16,185,129,.12);
+               border:1px solid rgba(16,185,129,.3); padding:5px 11px; border-radius:999px; }
+
+    .pg-wrap { padding-top:28px; padding-bottom:64px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; }
+    @media (max-width:880px){ .grid { grid-template-columns:1fr; } }
+
+    .panel { background:var(--pg-card); border:1px solid var(--pg-line);
+             border-radius:14px; padding:20px; }
+    .panel h2 { margin:0 0 12px; font-size:14px; text-transform:uppercase;
+                letter-spacing:.6px; color:var(--pg-muted); }
+    .howto { font-size:13px; color:var(--pg-muted); margin:0 0 12px; }
+    .howto code { background:#0f172a; color:#e2e8f0; padding:2px 7px; border-radius:6px;
+                  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12px; }
+    textarea { width:100%; min-height:300px; resize:vertical; border:1px solid var(--pg-line);
+               border-radius:10px; padding:13px 14px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+               font-size:12.5px; line-height:1.5; color:#0f172a; background:#fcfdff; }
+    textarea:focus { outline:2px solid var(--pg-accent); outline-offset:1px; }
+    .btnrow { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+    .btn { border:1px solid var(--pg-line); background:#fff; color:var(--pg-ink);
+           padding:9px 16px; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn:hover { background:#f1f5f9; }
+    .btn.primary { background:var(--pg-accent); color:#fff; border-color:var(--pg-accent); }
+    .btn.primary:hover { background:#1e40af; }
+
+    .result.empty { display:flex; align-items:center; justify-content:center;
+                    color:var(--pg-muted); font-size:14px; text-align:center; min-height:320px; }
+    .err { color:#991b1b; background:#fef2f2; border:1px solid #fecaca;
+           border-radius:10px; padding:12px 14px; font-size:13.5px; }
+
+    .scorecard { display:flex; gap:22px; align-items:center; }
+    .gauge { flex:0 0 auto; }
+    .grade { font-size:21px; font-weight:800; }
+    .status { color:var(--pg-muted); margin-top:3px; font-size:14px; }
+    .counts { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+    .cnt { font-size:12.5px; font-weight:700; padding:5px 11px; border-radius:999px; }
+    .cnt.pass { background:#dcfce7; color:#166534; }
+    .cnt.warn { background:#fef3c7; color:#92400e; }
+    .cnt.fail { background:#fee2e2; color:#991b1b; }
+
+    table.checks { width:100%; border-collapse:collapse; margin-top:20px; }
+    table.checks th, table.checks td { text-align:left; padding:9px 10px; font-size:13px;
+        border-bottom:1px solid var(--pg-line); vertical-align:top; }
+    table.checks th { color:var(--pg-muted); font-weight:600; font-size:12px;
+        text-transform:uppercase; letter-spacing:.4px; }
+    .pill { display:inline-block; font-size:11px; font-weight:700; padding:3px 9px;
+            border-radius:999px; white-space:nowrap; }
+    .pill.clear { background:#dcfce7; color:#166534; }
+    .pill.warn  { background:#fef3c7; color:#92400e; }
+    .pill.alert { background:#fee2e2; color:#991b1b; }
+    .ptcell { font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--pg-muted); }
+    .detail { color:#334155; }
+    .share { margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="ph-inner">
+    <div class="breadcrumb"><a href="/">pgvitals</a> / Playground</div>
+    <h1>Health Score Playground</h1>
+    <p>Paste the output of <code>health_score.sql</code> and get a shareable health card — gauge, grade, and per-check breakdown. No database connection, no install.</p>
+    <div class="privacy">🔒 Runs entirely in your browser — nothing is uploaded</div>
+  </div>
+</div>
+
+<div class="pg-wrap">
+  <div class="grid">
+    <div class="panel">
+      <h2>Paste output</h2>
+      <p class="howto">Run <code>psql -d mydb -f health_score.sql</code> and paste the result below.</p>
+      <textarea id="input" placeholder="Paste the health_score.sql output here…" spellcheck="false"></textarea>
+      <div class="btnrow">
+        <button class="btn primary" id="render">Render report →</button>
+        <button class="btn" id="sample">Load sample</button>
+        <button class="btn" id="clear">Clear</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Result</h2>
+      <div id="result" class="result empty">Your health card will appear here.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var SAMPLE = [
+    "╔════════════════════════╤═════════╤══════════════════════════════╤══════════╤══════════╤══════════╗",
+    "║ Score                  │ Grade   │ Status                       │ ✓ Passed │ ~ Warned │ ✗ Failed ║",
+    "╠════════════════════════╪═════════╪══════════════════════════════╪══════════╪══════════╪══════════╣",
+    "║ 87 / 100               │ B       │ Good — minor issues to review│        8 │        1 │        0 ║",
+    "╚════════════════════════╧═════════╧══════════════════════════════╧══════════╧══════════╧══════════╝",
+    "",
+    "╔═══╤══════════════════════════╤═══════════╤═══════════╤════════════════════════════════════════╗",
+    "║ # │ Check                    │ Score     │ Status    │ Detail                                 ║",
+    "╠═══╪══════════════════════════╪═══════════╪═══════════╪════════════════════════════════════════╣",
+    "║ 1 │ XID Wraparound           │ 20 / 20   │ ✓ Clear   │ max age: 2,933 txns (limit ~2 billion) ║",
+    "║ 2 │ Dead Tuple Bloat         │ 15 / 15   │ ✓ Clear   │ 0 table(s) with >10% dead tuples       ║",
+    "║ 3 │ Connection Saturation    │ 15 / 15   │ ✓ Clear   │ 63.0% of max_connections in use        ║",
+    "║ 4 │ Lock Waits               │ 10 / 10   │ ✓ Clear   │ 0 session(s) currently blocked         ║",
+    "║ 5 │ Buffer Cache Hit Ratio   │  5 / 10   │ ~ Warning │ 93.20% hit rate (target ≥ 95%)         ║",
+    "║ 6 │ Invalid Indexes          │ 10 / 10   │ ✓ Clear   │ 0 invalid index(es) detected           ║",
+    "║ 7 │ Idle-in-Transaction      │ 10 / 10   │ ✓ Clear   │ 0 session(s) stuck in open transaction ║",
+    "║ 8 │ Replication Lag          │  5 /  5   │ ✓ Clear   │ 0 standby(s) configured                ║",
+    "║ 9 │ Sequence Exhaustion      │  5 /  5   │ ✓ Clear   │ 0 sequence(s) above 80% capacity       ║",
+    "╚═══╧══════════════════════════╧═══════════╧═══════════╧════════════════════════════════════════╝"
+  ].join("\n");
+
+  var input  = document.getElementById("input");
+  var result = document.getElementById("result");
+
+  function gradeFor(score) {
+    if (score >= 90) return ["A", "Excellent", "#16a34a"];
+    if (score >= 75) return ["B", "Good", "#65a30d"];
+    if (score >= 60) return ["C", "Fair", "#d97706"];
+    if (score >= 40) return ["D", "Poor", "#ea580c"];
+    return ["F", "Critical", "#dc2626"];
+  }
+
+  // Split a bordered psql line into trimmed cells (handles unicode + ascii borders).
+  // Separators: │ (inner), ║ (border-2 outer frame), | (ascii).
+  function cellsOf(line) {
+    if (!/[│|║]/.test(line)) return null;
+    var parts = line.split(/[│|║]/).map(function (c) { return c.trim(); });
+    while (parts.length && parts[0] === "") parts.shift();
+    while (parts.length && parts[parts.length - 1] === "") parts.pop();
+    return parts.length ? parts : null;
+  }
+
+  function parse(text) {
+    var lines = text.split(/\r?\n/);
+    var overall = null, checks = [];
+    for (var i = 0; i < lines.length; i++) {
+      var cells = cellsOf(lines[i]);
+      if (!cells) continue;
+
+      // Overall score row: a cell like "87 / 100"
+      var scoreCell = cells.find(function (c) { return /^\d+\s*\/\s*100$/.test(c); });
+      if (scoreCell && !overall) {
+        var score = parseInt(scoreCell, 10);
+        var ints = cells.filter(function (c) { return /^\d+$/.test(c); }).map(Number);
+        var status = cells.find(function (c) { return c.length > 8 && /[A-Za-z]/.test(c) && !/^\d+\s*\/\s*100$/.test(c); }) || "";
+        overall = { score: score, ints: ints, status: status };
+        continue;
+      }
+
+      // Per-check row: starts with 1–9 and has a "n / m" score (m != 100)
+      var ptsCell = cells.find(function (c) { return /^\d+\s*\/\s*\d+$/.test(c) && !/\/\s*100$/.test(c); });
+      if (/^[1-9]$/.test(cells[0]) && ptsCell) {
+        var nm = ptsCell.split("/").map(function (s) { return parseInt(s, 10); });
+        var statusCell = cells.find(function (c) { return /[✓✗~]|Clear|Alert|Warning/.test(c); }) || "";
+        checks.push({
+          n: parseInt(cells[0], 10),
+          name: cells[1] || "",
+          pts: nm[0], max: nm[1],
+          status: statusCell,
+          detail: cells[cells.length - 1] || ""
+        });
+      }
+    }
+    return { overall: overall, checks: checks };
+  }
+
+  function statusClass(pts, max, statusText) {
+    if (/✓|Clear/.test(statusText) || pts === max) return "clear";
+    if (/✗|Alert/.test(statusText) || pts === 0)  return "alert";
+    return "warn";
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function gaugeSVG(score, color) {
+    var r = 52, c = 2 * Math.PI * r, dash = c * score / 100;
+    return '<svg class="gauge" width="116" height="116" viewBox="0 0 130 130" aria-label="Score ' + score + ' of 100">' +
+      '<circle cx="65" cy="65" r="52" fill="none" stroke="#e5e7eb" stroke-width="13"/>' +
+      '<circle cx="65" cy="65" r="52" fill="none" stroke="' + color + '" stroke-width="13" ' +
+        'stroke-linecap="round" stroke-dasharray="' + dash.toFixed(1) + ' ' + c.toFixed(1) + '" ' +
+        'transform="rotate(-90 65 65)"/>' +
+      '<text x="65" y="69" text-anchor="middle" font-size="32" font-weight="800" fill="' + color + '" font-family="Inter,sans-serif">' + score + '</text>' +
+      '<text x="65" y="89" text-anchor="middle" font-size="11" fill="#94a3b8" font-family="Inter,sans-serif">/ 100</text>' +
+      '</svg>';
+  }
+
+  function render() {
+    var text = input.value.trim();
+    if (!text) { showError("Paste the output of health_score.sql first."); return; }
+    var data = parse(text);
+
+    var score = data.overall ? data.overall.score : null;
+    // Fall back to summing the per-check points if no overall row was pasted
+    if (score === null && data.checks.length) {
+      score = data.checks.reduce(function (a, c) { return a + c.pts; }, 0);
+    }
+    if (score === null) {
+      showError("Couldn't find a health score in that text. Paste the full output of <code>health_score.sql</code> (the boxed tables).");
+      return;
+    }
+
+    var g = gradeFor(score);
+    var pass = 0, warn = 0, fail = 0;
+    data.checks.forEach(function (c) {
+      var cls = statusClass(c.pts, c.max, c.status);
+      if (cls === "clear") pass++; else if (cls === "alert") fail++; else warn++;
+    });
+    if (data.overall && data.overall.ints.length >= 4) {
+      // ints = [score, passed, warned, failed] when counts were pasted
+      var tail = data.overall.ints.slice(-3);
+      if (tail.length === 3) { pass = tail[0]; warn = tail[1]; fail = tail[2]; }
+    }
+
+    var html = '<div class="scorecard">' + gaugeSVG(score, g[2]) +
+      '<div><div class="grade" style="color:' + g[2] + '">Grade ' + g[0] + ' — ' + g[1] + '</div>' +
+      '<div class="status">' + esc(data.overall && data.overall.status ? data.overall.status : g[1]) + '</div>' +
+      '<div class="counts">' +
+        '<span class="cnt pass">✓ ' + pass + ' passed</span>' +
+        '<span class="cnt warn">~ ' + warn + ' warned</span>' +
+        '<span class="cnt fail">✗ ' + fail + ' failed</span>' +
+      '</div></div></div>';
+
+    if (data.checks.length) {
+      html += '<table class="checks"><thead><tr><th>#</th><th>Check</th><th>Score</th><th>Status</th><th>Detail</th></tr></thead><tbody>';
+      data.checks.forEach(function (c) {
+        var cls = statusClass(c.pts, c.max, c.status);
+        var label = cls === "clear" ? "Clear" : (cls === "alert" ? "Alert" : "Warning");
+        html += '<tr><td class="ptcell">' + c.n + '</td><td><b>' + esc(c.name) + '</b></td>' +
+          '<td class="ptcell">' + c.pts + ' / ' + c.max + '</td>' +
+          '<td><span class="pill ' + cls + '">' + label + '</span></td>' +
+          '<td class="detail">' + esc(c.detail) + '</td></tr>';
+      });
+      html += '</tbody></table>';
+    }
+
+    html += '<div class="share">' +
+      '<button class="btn" id="copymd">Copy as Markdown</button>' +
+      '<button class="btn" id="print">Print / Save PDF</button></div>';
+
+    result.className = "result";
+    result.innerHTML = html;
+
+    document.getElementById("print").onclick = function () { window.print(); };
+    document.getElementById("copymd").onclick = function () { copyMarkdown(score, g, data.checks); };
+  }
+
+  function copyMarkdown(score, g, checks) {
+    var md = "## 🩺 PostgreSQL Health Score: " + score + "/100 — Grade " + g[0] + " (" + g[1] + ")\n\n";
+    if (checks.length) {
+      md += "| # | Check | Score | Detail |\n|---|-------|-------|--------|\n";
+      checks.forEach(function (c) {
+        md += "| " + c.n + " | " + c.name + " | " + c.pts + "/" + c.max + " | " + c.detail + " |\n";
+      });
+    }
+    md += "\n_Generated with [pgvitals](https://pgvitals.github.io/)_";
+    navigator.clipboard.writeText(md).then(function () {
+      var b = document.getElementById("copymd");
+      var t = b.textContent; b.textContent = "Copied ✓";
+      setTimeout(function () { b.textContent = t; }, 1500);
+    });
+  }
+
+  function showError(msg) {
+    result.className = "result";
+    result.innerHTML = '<div class="err">' + msg + '</div>';
+  }
+
+  document.getElementById("render").onclick = render;
+  document.getElementById("sample").onclick = function () { input.value = SAMPLE; render(); };
+  document.getElementById("clear").onclick = function () {
+    input.value = "";
+    result.className = "result empty";
+    result.textContent = "Your health card will appear here.";
+  };
+})();
+</script>
+</body>
+</html>
