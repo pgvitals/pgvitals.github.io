@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>N+1 Patterns in PostgreSQL — Diagnose &amp; Fix — pgvitals</title>
+  <meta name="description" content="Fast queries called thousands of times — classic ORM N+1 symptom. Ready-to-run SQL, what to look for (calls &gt; 10,000 and mean_exec_ms &lt; 10), and how to fix it." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://pgvitals.github.io/sections/04-n-1-patterns.html" />
+  <meta property="og:site_name" content="pgvitals" />
+  <meta property="og:title" content="N+1 Patterns in PostgreSQL — Diagnose &amp; Fix" />
+  <meta property="og:description" content="Fast queries called thousands of times — classic ORM N+1 symptom." />
+  <meta property="og:url" content="https://pgvitals.github.io/sections/04-n-1-patterns.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="https://pgvitals.github.io/og-image.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="N+1 Patterns in PostgreSQL — Diagnose &amp; Fix" />
+  <meta name="twitter:description" content="Fast queries called thousands of times — classic ORM N+1 symptom." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+  <link rel="stylesheet" href="/shell.css" />
+  <script src="/shell.js" defer></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"N+1 Patterns in PostgreSQL — Diagnose & Fix","description":"Fast queries called thousands of times — classic ORM N+1 symptom.","about":"PostgreSQL performance diagnostics","articleSection":"Query Behavior","url":"https://pgvitals.github.io/sections/04-n-1-patterns.html","isPartOf":{"@type":"WebSite","name":"pgvitals","url":"https://pgvitals.github.io"},"keywords":"N+1 Patterns, PostgreSQL, Query Behavior, database diagnostics"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"pgvitals","item":"https://pgvitals.github.io/"},{"@type":"ListItem","position":2,"name":"Diagnostics","item":"https://pgvitals.github.io/diagnostics.html"},{"@type":"ListItem","position":3,"name":"N+1 Patterns","item":"https://pgvitals.github.io/sections/04-n-1-patterns.html"}]}</script>
+  <style>
+    body { font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+           color:#0f172a; background:#f8fafc; margin:0; }
+    .hdr { background:#0f172a; color:#fff; padding:38px 0 30px; }
+    .wrap { max-width:840px; margin:0 auto; padding:0 24px; }
+    .crumb { font-size:13px; color:#94a3b8; margin-bottom:10px; }
+    .crumb a { color:#cbd5e1; text-decoration:none; }
+    .hdr h1 { margin:6px 0 8px; font-size:30px; letter-spacing:-0.6px; line-height:1.15; }
+    .pill { display:inline-block; font-size:12px; font-weight:700; background:rgba(59,130,246,.18);
+            color:#bfdbfe; padding:4px 11px; border-radius:999px; }
+    main { padding:30px 0 70px; }
+    .block { margin:0 0 30px; }
+    .block h2 { font-size:18px; margin:0 0 10px; }
+    .lead { font-size:17px; line-height:1.6; color:#334155; }
+    .lookfor { background:#fff; border:1px solid #e2e8f0; border-left:4px solid #f59e0b;
+               border-radius:8px; padding:12px 16px; font-size:15px; }
+    pre { background:#0d1117; border-radius:10px; padding:16px; overflow-x:auto; margin:0; }
+    pre code { font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .action { background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:12px 16px; font-size:15px; }
+    .req { font-size:14px; color:#64748b; }
+    code { background:#eef2f7; padding:1px 6px; border-radius:5px;
+           font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .related { list-style:none; padding:0; margin:0; display:grid;
+               grid-template-columns:1fr 1fr; gap:8px; }
+    @media (max-width:640px){ .related { grid-template-columns:1fr; } }
+    .related a { display:block; background:#fff; border:1px solid #e2e8f0; border-radius:8px;
+                 padding:10px 12px; text-decoration:none; color:#1d4ed8; font-size:14px; font-weight:600; }
+    .related a:hover { background:#f1f5f9; }
+    .cta { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .cta a { text-decoration:none; font-weight:600; font-size:14px; padding:10px 16px;
+             border-radius:9px; border:1px solid #e2e8f0; color:#0f172a; background:#fff; }
+    .cta a.primary { background:#1d4ed8; color:#fff; border-color:#1d4ed8; }
+    .copy { float:right; font-size:12px; font-weight:600; color:#94a3b8; background:transparent;
+            border:1px solid #334155; border-radius:6px; padding:4px 10px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <header class="hdr">
+    <div class="wrap">
+      <div class="crumb"><a href="/">pgvitals</a> / <a href="/diagnostics.html">Diagnostics</a> / N+1 Patterns</div>
+      <span class="pill">Query Behavior · Section 04</span>
+      <h1>N+1 Patterns in PostgreSQL</h1>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="block">
+      <p class="lead">Fast queries called thousands of times — classic ORM N+1 symptom.</p>
+    </section>
+
+    <section class="block">
+      <h2>What to look for</h2>
+      <p class="lookfor">calls &gt; 10,000 and mean_exec_ms &lt; 10</p>
+    </section>
+
+    <section class="block">
+      <h2>The diagnostic query</h2>
+      <p class="req"><strong>Requires:</strong> <code>pg_stat_statements</code></p>
+      <pre><button class="copy" onclick="(function(b){navigator.clipboard.writeText(b.parentElement.querySelector('code').innerText).then(()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1200)})})(this)">Copy</button><code class="language-sql">SELECT
+    calls,
+    round(mean_exec_time::numeric, 4)                              AS mean_exec_ms,
+    round(total_exec_time::numeric, 2)                             AS total_exec_ms,
+    round(rows::numeric / nullif(calls, 0), 2)                    AS rows_per_call,
+    left(query, 200)                                               AS query_snippet
+FROM pg_stat_statements
+WHERE calls &gt; 10000
+  AND mean_exec_time &lt; 10
+ORDER BY calls DESC
+LIMIT 20;</code></pre>
+    </section>
+
+    <section class="block">
+      <h2>How to fix it</h2>
+      <p class="action">Batch with IN clause; enable ORM eager loading; use prepared statements.</p>
+    </section>
+
+    <section class="block">
+      <div class="cta">
+        <a class="primary" href="/diagnostics.html#n-1-patterns">Open in diagnostics browser →</a>
+        <a href="/playground.html">Score your database</a>
+        <a href="https://github.com/pgvitals/pgvitals/tree/master/sql">View all SQL on GitHub</a>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Related Query Behavior checks</h2>
+      <ul class="related">
+        <li><a href="/sections/01-slow-expensive-queries.html">01 · Slow / Expensive Queries</a></li>
+        <li><a href="/sections/02-temp-file-work-mem-pressure.html">02 · Temp File &amp; work_mem Pressure</a></li>
+        <li><a href="/sections/03-sequential-scan-hotspots.html">03 · Sequential Scan Hotspots</a></li>
+        <li><a href="/sections/05-jit-compilation-overhead.html">05 · JIT Compilation Overhead</a></li>
+      </ul>
+    </section>
+  </main>
+  <script>document.addEventListener('DOMContentLoaded',function(){if(window.hljs)hljs.highlightAll();});</script>
+</body>
+</html>
