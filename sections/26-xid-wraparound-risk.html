@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XID Wraparound Risk in PostgreSQL — Diagnose &amp; Fix — pgvitals</title>
+  <meta name="description" content="Distance from transaction ID exhaustion (hard limit: ~2 billion XIDs). Ready-to-run SQL, what to look for (xid_age &gt; 1.5B → emergency VACUUM FREEZE; pct_used &gt; 70% → plan maintenance.), and how to fix it." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://pgvitals.github.io/sections/26-xid-wraparound-risk.html" />
+  <meta property="og:site_name" content="pgvitals" />
+  <meta property="og:title" content="XID Wraparound Risk in PostgreSQL — Diagnose &amp; Fix" />
+  <meta property="og:description" content="Distance from transaction ID exhaustion (hard limit: ~2 billion XIDs)." />
+  <meta property="og:url" content="https://pgvitals.github.io/sections/26-xid-wraparound-risk.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="https://pgvitals.github.io/og-image.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="XID Wraparound Risk in PostgreSQL — Diagnose &amp; Fix" />
+  <meta name="twitter:description" content="Distance from transaction ID exhaustion (hard limit: ~2 billion XIDs)." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+  <link rel="stylesheet" href="/shell.css" />
+  <script src="/shell.js" defer></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"XID Wraparound Risk in PostgreSQL — Diagnose & Fix","description":"Distance from transaction ID exhaustion (hard limit: ~2 billion XIDs).","about":"PostgreSQL performance diagnostics","articleSection":"Risk Signals","url":"https://pgvitals.github.io/sections/26-xid-wraparound-risk.html","isPartOf":{"@type":"WebSite","name":"pgvitals","url":"https://pgvitals.github.io"},"keywords":"XID Wraparound Risk, PostgreSQL, Risk Signals, database diagnostics"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"pgvitals","item":"https://pgvitals.github.io/"},{"@type":"ListItem","position":2,"name":"Diagnostics","item":"https://pgvitals.github.io/diagnostics.html"},{"@type":"ListItem","position":3,"name":"XID Wraparound Risk","item":"https://pgvitals.github.io/sections/26-xid-wraparound-risk.html"}]}</script>
+  <style>
+    body { font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+           color:#0f172a; background:#f8fafc; margin:0; }
+    .hdr { background:#0f172a; color:#fff; padding:38px 0 30px; }
+    .wrap { max-width:840px; margin:0 auto; padding:0 24px; }
+    .crumb { font-size:13px; color:#94a3b8; margin-bottom:10px; }
+    .crumb a { color:#cbd5e1; text-decoration:none; }
+    .hdr h1 { margin:6px 0 8px; font-size:30px; letter-spacing:-0.6px; line-height:1.15; }
+    .pill { display:inline-block; font-size:12px; font-weight:700; background:rgba(59,130,246,.18);
+            color:#bfdbfe; padding:4px 11px; border-radius:999px; }
+    main { padding:30px 0 70px; }
+    .block { margin:0 0 30px; }
+    .block h2 { font-size:18px; margin:0 0 10px; }
+    .lead { font-size:17px; line-height:1.6; color:#334155; }
+    .lookfor { background:#fff; border:1px solid #e2e8f0; border-left:4px solid #f59e0b;
+               border-radius:8px; padding:12px 16px; font-size:15px; }
+    pre { background:#0d1117; border-radius:10px; padding:16px; overflow-x:auto; margin:0; }
+    pre code { font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .action { background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:12px 16px; font-size:15px; }
+    .req { font-size:14px; color:#64748b; }
+    code { background:#eef2f7; padding:1px 6px; border-radius:5px;
+           font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .related { list-style:none; padding:0; margin:0; display:grid;
+               grid-template-columns:1fr 1fr; gap:8px; }
+    @media (max-width:640px){ .related { grid-template-columns:1fr; } }
+    .related a { display:block; background:#fff; border:1px solid #e2e8f0; border-radius:8px;
+                 padding:10px 12px; text-decoration:none; color:#1d4ed8; font-size:14px; font-weight:600; }
+    .related a:hover { background:#f1f5f9; }
+    .cta { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .cta a { text-decoration:none; font-weight:600; font-size:14px; padding:10px 16px;
+             border-radius:9px; border:1px solid #e2e8f0; color:#0f172a; background:#fff; }
+    .cta a.primary { background:#1d4ed8; color:#fff; border-color:#1d4ed8; }
+    .copy { float:right; font-size:12px; font-weight:600; color:#94a3b8; background:transparent;
+            border:1px solid #334155; border-radius:6px; padding:4px 10px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <header class="hdr">
+    <div class="wrap">
+      <div class="crumb"><a href="/">pgvitals</a> / <a href="/diagnostics.html">Diagnostics</a> / XID Wraparound Risk</div>
+      <span class="pill">Risk Signals · Section 26</span>
+      <h1>XID Wraparound Risk in PostgreSQL</h1>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="block">
+      <p class="lead">Distance from transaction ID exhaustion (hard limit: ~2 billion XIDs).</p>
+    </section>
+
+    <section class="block">
+      <h2>What to look for</h2>
+      <p class="lookfor">xid_age &gt; 1.5B → emergency VACUUM FREEZE; pct_used &gt; 70% → plan maintenance.</p>
+    </section>
+
+    <section class="block">
+      <h2>The diagnostic query</h2>
+      
+      <pre><button class="copy" onclick="(function(b){navigator.clipboard.writeText(b.parentElement.querySelector('code').innerText).then(()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1200)})})(this)">Copy</button><code class="language-sql">-- Database level
+SELECT
+    datname,
+    age(datfrozenxid)                                                 AS xid_age,
+    2147483647 - age(datfrozenxid)                                   AS xid_remaining,
+    round(age(datfrozenxid)::numeric / 2147483647 * 100, 2)         AS pct_used
+FROM pg_database
+ORDER BY age(datfrozenxid) DESC;
+
+-- Table level (top 20 oldest)
+SELECT
+    n.nspname AS schemaname, c.relname AS tablename,
+    age(c.relfrozenxid) AS xid_age,
+    round(age(c.relfrozenxid)::numeric / 2147483647 * 100, 2) AS pct_used,
+    pg_size_pretty(pg_relation_size(c.oid)) AS table_size
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE c.relkind = 'r' AND n.nspname NOT IN ('pg_catalog','information_schema')
+ORDER BY age(c.relfrozenxid) DESC
+LIMIT 20;</code></pre>
+    </section>
+
+    <section class="block">
+      <h2>How to fix it</h2>
+      <p class="action">VACUUM FREEZE on oldest tables; lower autovacuum_freeze_max_age.</p>
+    </section>
+
+    <section class="block">
+      <div class="cta">
+        <a class="primary" href="/diagnostics.html#xid-wraparound-risk">Open in diagnostics browser →</a>
+        <a href="/playground.html">Score your database</a>
+        <a href="https://github.com/pgvitals/pgvitals/tree/master/sql">View all SQL on GitHub</a>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Related Risk Signals checks</h2>
+      <ul class="related">
+        <li><a href="/sections/27-multixact-id-wraparound-risk.html">27 · MultiXact ID Wraparound Risk</a></li>
+        <li><a href="/sections/28-sequence-exhaustion-risk.html">28 · Sequence Exhaustion Risk</a></li>
+      </ul>
+    </section>
+  </main>
+  <script>document.addEventListener('DOMContentLoaded',function(){if(window.hljs)hljs.highlightAll();});</script>
+</body>
+</html>
