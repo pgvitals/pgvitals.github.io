@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>pgvitals — PostgreSQL Performance Diagnostics</title>
-  <meta name="description" content="40 copy-paste PostgreSQL diagnostic queries covering every performance bottleneck. No install. No agents. Just SQL." />
+  <meta name="description" content="40 copy-paste PostgreSQL diagnostic queries covering every performance bottleneck, plus a 0–100 health score, a shareable HTML report, and optional AI analysis. No install. No agents. Just SQL." />
   <meta name="robots" content="index, follow" />
   <meta name="author" content="pgvitals" />
   <meta name="keywords" content="PostgreSQL diagnostics, PostgreSQL performance tuning, pg_stat_statements, slow query analysis, index bloat, vacuum monitoring, PostgreSQL DBA tools, database health check, SQL queries" />
@@ -37,7 +37,7 @@
         "@type": "SoftwareApplication",
         "@id": "https://pgvitals.github.io/#app",
         "name": "pgvitals",
-        "description": "40 copy-paste PostgreSQL diagnostic SQL queries covering every performance bottleneck — slow queries, index bloat, vacuum health, locks, replication lag, wraparound risk, and more.",
+        "description": "40 copy-paste PostgreSQL diagnostic SQL queries covering every performance bottleneck — slow queries, index bloat, vacuum health, locks, replication lag, wraparound risk, and more — plus a 0–100 health score, a shareable HTML report, and optional AI analysis.",
         "url": "https://pgvitals.github.io/",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Linux, macOS, Windows",
@@ -1231,9 +1231,10 @@
         <span>🩺</span> PostgreSQL Diagnostics
       </div>
       <h1>Stop Guessing.<br><em>Start Diagnosing.</em></h1>
-      <p class="hero-desc">40 copy-paste SQL queries that cover every PostgreSQL performance bottleneck. Run them in psql, pgAdmin, or any SQL client. No agents. No install. Just SQL.</p>
+      <p class="hero-desc">40 copy-paste SQL queries covering every PostgreSQL bottleneck — plus a 0–100 health score, a shareable HTML report, and optional AI analysis. Run them in psql, the CLI, or Docker. No agents. No install. Just SQL.</p>
       <div class="hero-ctas">
         <a class="btn-hero-primary" href="/diagnostics.html">Open Diagnostics →</a>
+        <a class="btn-hero-ghost" href="/playground.html">Score your database</a>
         <a class="btn-hero-ghost" href="https://github.com/pgvitals/pgvitals" target="_blank" rel="noopener">
           <svg height="15" viewBox="0 0 16 16" width="15" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
           View on GitHub
@@ -1537,8 +1538,8 @@
 <section class="section">
   <div class="section-inner">
     <div class="section-label">Usage</div>
-    <h2 class="section-heading">Three ways to use pgvitals.</h2>
-    <p class="section-sub">Pick the workflow that fits your situation — a production incident, a routine health check, or a planned load test.</p>
+    <h2 class="section-heading">Many ways to use pgvitals.</h2>
+    <p class="section-sub">Pick the workflow that fits — a production incident, a routine health check, a load test, a shareable report, or AI-assisted triage.</p>
     <div class="steps-grid">
       <div class="step-card">
         <div class="step-num">1</div>
@@ -1563,6 +1564,18 @@
         <div class="step-title">Load test monitoring</div>
         <div class="step-desc">Use the snapshot framework to capture metrics at intervals during a stress test, then diff baseline vs peak.</div>
         <div class="step-code">SELECT perf_monitor<br>&nbsp;&nbsp;.capture_snapshot('peak');</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">5</div>
+        <div class="step-title">Zero-install Docker</div>
+        <div class="step-desc">No Python, no psql setup — run the full diagnostic runner from a container against any reachable database.</div>
+        <div class="step-code">docker run --rm ghcr.io<br>&nbsp;&nbsp;/pgvitals/pgvitals --host db -d prod</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">6</div>
+        <div class="step-title">Shareable HTML + AI</div>
+        <div class="step-desc">Generate a self-contained HTML report with a health gauge — and add <code>--explain</code> for a prioritized, plain-English fix list from Claude.</div>
+        <div class="step-code">pgvitals -d prod --format html<br>&nbsp;&nbsp;--explain -o report.html</div>
       </div>
     </div>
   </div>
@@ -1639,7 +1652,7 @@
   <div class="section-inner">
     <div class="section-label">Automation</div>
     <h2 class="section-heading">Diagnostic Runner & Live Reports</h2>
-    <p class="section-sub">pgvitals includes a Python-based diagnostic runner that connects to any live database, runs all 37 sections in sequence, and generates a formatted health analysis report.</p>
+    <p class="section-sub">pgvitals includes a Python-based diagnostic runner that connects to any live database, runs all 40 sections, and generates a Markdown or self-contained HTML report — with an optional AI analysis that prioritizes the fixes.</p>
 
     <div class="runner-grid">
       <div class="runner-features">
@@ -1653,8 +1666,8 @@
             <span class="t-comment"># Run full diagnostics against any database</span><br>
             <span class="t-prompt">$</span> <span class="t-cmd">pgvitals --host db.example.com --database prod</span><br>
             <br>
-            <span class="t-comment"># Or use a config profile</span><br>
-            <span class="t-prompt">$</span> <span class="t-cmd">pgvitals --profile staging --sections 01,06,19</span>
+            <span class="t-comment"># Shareable HTML report + AI analysis</span><br>
+            <span class="t-prompt">$</span> <span class="t-cmd">pgvitals -d prod --format html --explain -o report.html</span>
           </div>
         </div>
 

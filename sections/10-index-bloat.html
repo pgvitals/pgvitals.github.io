@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Index Bloat in PostgreSQL — Diagnose &amp; Fix — pgvitals</title>
+  <meta name="description" content="Indexes with high fragmentation — free-space waste from deletes and updates. Ready-to-run SQL, what to look for (bloat_pct_estimate &gt; 30% on large indexes), and how to fix it." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://pgvitals.github.io/sections/10-index-bloat.html" />
+  <meta property="og:site_name" content="pgvitals" />
+  <meta property="og:title" content="Index Bloat in PostgreSQL — Diagnose &amp; Fix" />
+  <meta property="og:description" content="Indexes with high fragmentation — free-space waste from deletes and updates." />
+  <meta property="og:url" content="https://pgvitals.github.io/sections/10-index-bloat.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="https://pgvitals.github.io/og-image.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Index Bloat in PostgreSQL — Diagnose &amp; Fix" />
+  <meta name="twitter:description" content="Indexes with high fragmentation — free-space waste from deletes and updates." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+  <link rel="stylesheet" href="/shell.css" />
+  <script src="/shell.js" defer></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Index Bloat in PostgreSQL — Diagnose & Fix","description":"Indexes with high fragmentation — free-space waste from deletes and updates.","about":"PostgreSQL performance diagnostics","articleSection":"Index Health","url":"https://pgvitals.github.io/sections/10-index-bloat.html","isPartOf":{"@type":"WebSite","name":"pgvitals","url":"https://pgvitals.github.io"},"keywords":"Index Bloat, PostgreSQL, Index Health, database diagnostics"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"pgvitals","item":"https://pgvitals.github.io/"},{"@type":"ListItem","position":2,"name":"Diagnostics","item":"https://pgvitals.github.io/diagnostics.html"},{"@type":"ListItem","position":3,"name":"Index Bloat","item":"https://pgvitals.github.io/sections/10-index-bloat.html"}]}</script>
+  <style>
+    body { font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+           color:#0f172a; background:#f8fafc; margin:0; }
+    .hdr { background:#0f172a; color:#fff; padding:38px 0 30px; }
+    .wrap { max-width:840px; margin:0 auto; padding:0 24px; }
+    .crumb { font-size:13px; color:#94a3b8; margin-bottom:10px; }
+    .crumb a { color:#cbd5e1; text-decoration:none; }
+    .hdr h1 { margin:6px 0 8px; font-size:30px; letter-spacing:-0.6px; line-height:1.15; }
+    .pill { display:inline-block; font-size:12px; font-weight:700; background:rgba(59,130,246,.18);
+            color:#bfdbfe; padding:4px 11px; border-radius:999px; }
+    main { padding:30px 0 70px; }
+    .block { margin:0 0 30px; }
+    .block h2 { font-size:18px; margin:0 0 10px; }
+    .lead { font-size:17px; line-height:1.6; color:#334155; }
+    .lookfor { background:#fff; border:1px solid #e2e8f0; border-left:4px solid #f59e0b;
+               border-radius:8px; padding:12px 16px; font-size:15px; }
+    pre { background:#0d1117; border-radius:10px; padding:16px; overflow-x:auto; margin:0; }
+    pre code { font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .action { background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:12px 16px; font-size:15px; }
+    .req { font-size:14px; color:#64748b; }
+    code { background:#eef2f7; padding:1px 6px; border-radius:5px;
+           font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .related { list-style:none; padding:0; margin:0; display:grid;
+               grid-template-columns:1fr 1fr; gap:8px; }
+    @media (max-width:640px){ .related { grid-template-columns:1fr; } }
+    .related a { display:block; background:#fff; border:1px solid #e2e8f0; border-radius:8px;
+                 padding:10px 12px; text-decoration:none; color:#1d4ed8; font-size:14px; font-weight:600; }
+    .related a:hover { background:#f1f5f9; }
+    .cta { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .cta a { text-decoration:none; font-weight:600; font-size:14px; padding:10px 16px;
+             border-radius:9px; border:1px solid #e2e8f0; color:#0f172a; background:#fff; }
+    .cta a.primary { background:#1d4ed8; color:#fff; border-color:#1d4ed8; }
+    .copy { float:right; font-size:12px; font-weight:600; color:#94a3b8; background:transparent;
+            border:1px solid #334155; border-radius:6px; padding:4px 10px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <header class="hdr">
+    <div class="wrap">
+      <div class="crumb"><a href="/">pgvitals</a> / <a href="/diagnostics.html">Diagnostics</a> / Index Bloat</div>
+      <span class="pill">Index Health · Section 10</span>
+      <h1>Index Bloat in PostgreSQL</h1>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="block">
+      <p class="lead">Indexes with high fragmentation — free-space waste from deletes and updates.</p>
+    </section>
+
+    <section class="block">
+      <h2>What to look for</h2>
+      <p class="lookfor">bloat_pct_estimate &gt; 30% on large indexes</p>
+    </section>
+
+    <section class="block">
+      <h2>The diagnostic query</h2>
+      
+      <pre><button class="copy" onclick="(function(b){navigator.clipboard.writeText(b.parentElement.querySelector('code').innerText).then(()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1200)})})(this)">Copy</button><code class="language-sql">WITH index_info AS (
+    SELECT
+        n.nspname                                              AS schemaname,
+        ct.relname                                             AS tablename,
+        ci.relname                                             AS indexname,
+        pg_relation_size(ci.oid)                               AS index_bytes,
+        ci.relpages                                            AS actual_pages,
+        ceil(ci.reltuples * 14
+             / (current_setting('block_size')::int * 0.8)
+        )                                                      AS estimated_min_pages
+    FROM pg_index x
+    JOIN pg_class ci ON ci.oid = x.indexrelid
+    JOIN pg_class ct ON ct.oid = x.indrelid
+    JOIN pg_namespace n ON n.oid = ci.relnamespace
+    WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+      AND ci.relpages &gt; 0
+)
+SELECT
+    schemaname,
+    tablename,
+    indexname,
+    pg_size_pretty(index_bytes)                                            AS index_size,
+    actual_pages,
+    estimated_min_pages::int,
+    round(
+        ((1 - estimated_min_pages / nullif(actual_pages, 0)) * 100)::numeric, 2
+    )                                                                      AS bloat_pct_estimate
+FROM index_info
+WHERE index_bytes &gt; 1024 * 1024
+  AND actual_pages &gt; estimated_min_pages
+ORDER BY index_bytes DESC
+LIMIT 20;</code></pre>
+    </section>
+
+    <section class="block">
+      <h2>How to fix it</h2>
+      <p class="action">REINDEX CONCURRENTLY indexname</p>
+    </section>
+
+    <section class="block">
+      <div class="cta">
+        <a class="primary" href="/diagnostics.html#index-bloat">Open in diagnostics browser →</a>
+        <a href="/playground.html">Score your database</a>
+        <a href="https://github.com/pgvitals/pgvitals/tree/master/sql">View all SQL on GitHub</a>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Related Index Health checks</h2>
+      <ul class="related">
+        <li><a href="/sections/06-unused-indexes.html">06 · Unused Indexes</a></li>
+        <li><a href="/sections/07-duplicate-redundant-indexes.html">07 · Duplicate / Redundant Indexes</a></li>
+        <li><a href="/sections/08-invalid-indexes.html">08 · Invalid Indexes</a></li>
+        <li><a href="/sections/09-missing-foreign-key-indexes.html">09 · Missing Foreign Key Indexes</a></li>
+      </ul>
+    </section>
+  </main>
+  <script>document.addEventListener('DOMContentLoaded',function(){if(window.hljs)hljs.highlightAll();});</script>
+</body>
+</html>
