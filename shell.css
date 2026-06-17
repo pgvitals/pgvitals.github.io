@@ -171,6 +171,18 @@ footer {
 .footer-inner a { color: var(--accent); text-decoration: none; }
 .footer-inner a:hover { text-decoration: underline; }
 
+/* ── Accessibility: visible keyboard focus ─────────────────────────────── */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent, #2563eb);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* ── Nav responsive ────────────────────────────────────────────────────── */
 @media (max-width: 680px) {
   :root { --px: 20px; }
