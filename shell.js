@@ -50,7 +50,6 @@
     '    <span>🩺 <strong>pgvitals</strong> — MIT License &nbsp;\xB7&nbsp; Built by <a href="https://github.com/gauravs19" target="_blank" rel="noopener">Gaurav Sharma</a></span>',
     '    <span>',
     '      <a href="/diagnostics.html">Diagnostics</a> \xB7',
-    '      <a href="/sections/">Guides</a> \xB7',
     '      <a href="/playground.html">Playground</a> \xB7',
     '      <a href="/example-report.html">Example Report</a> \xB7',
     '      <a href="https://github.com/pgvitals/pgvitals" target="_blank" rel="noopener">GitHub</a> \xB7',
